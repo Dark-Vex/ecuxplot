@@ -15,28 +15,14 @@
     </target>
 
     <target name="compile">
-	<fail message="Can't find JRE${JAVA_TARGET_VER} rt.jar!">
-	    <condition>
-		<or>
-		    <equals arg1="${JAVA_RT_PATH}" arg2=""/>
-		    <not>
-			<isset property="JAVA_RT_PATH"/>
-		    </not>
-		</or>
-	    </condition>
-	</fail>
-	<available file="${JAVA_RT_PATH}" property="rt.jar.ok"/>
-	<fail message="Can't find ${JAVA_RT_PATH}!" unless="rt.jar.ok"/>
-
 	<javac
 	    srcdir="src"
 	    destdir="build/classes"
-	    source="${JAVA_TARGET_VER}"
-	    target="${JAVA_TARGET_VER}"
+	    release="${JAVA_TARGET_VER}"
 	    includeantruntime="false"
 	    classpathref="classpath"
+	    deprecation="on"
 	    debug="on"
-	    bootclasspath="${JAVA_RT_PATH}"
 	/>
     </target>
 

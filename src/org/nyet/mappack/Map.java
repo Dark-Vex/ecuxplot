@@ -24,7 +24,7 @@ public class Map implements Comparable<Object> {
 	}
 	@Override
 	public int compareTo(Object o) {
-	    return (new Integer(this.enm).compareTo(((Enm)o).enm));
+	    return (Integer.valueOf(this.enm).compareTo(((Enm)o).enm));
 	}
     }
 
@@ -119,7 +119,7 @@ public class Map implements Comparable<Object> {
 	public String toString() { return this.x + "x" + this.y; }
 	@Override
 	public int compareTo(Object o) {
-	    return (new Integer(areaOf())).compareTo(((Dimension)o).areaOf());
+	    return (Integer.valueOf(areaOf())).compareTo(((Dimension)o).areaOf());
 	}
 	public int areaOf() { return this.x*this.y; }
     }
@@ -536,7 +536,7 @@ public class Map implements Comparable<Object> {
     public static final String CSVHeader() {
 	final String[] header = {
 	    "ID","Address","Name","Size","Organization","Description",
-	    "Units","X Units","Y Units",
+	    "Units","X Address","Y Address", "X Units","Y Units",
 	    "Scale","X Scale","Y Scale",
 	    "Value min","Value max","Value min*1", "Value max*1"
 	    };
@@ -603,6 +603,8 @@ public class Map implements Comparable<Object> {
 	row.add(this.value.type);
 	row.add(this.value.description);
 	row.add(this.value.units);
+	row.add(this.x_axis.addr!=null?String.format("0x%x", this.x_axis.addr.v):"-");
+	row.add(this.y_axis.addr!=null?String.format("0x%x", this.y_axis.addr.v):"-");
 	row.add(this.x_axis.value.units);
 	row.add(this.y_axis.value.units);
 	row.add(this.value.factor);
@@ -617,7 +619,10 @@ public class Map implements Comparable<Object> {
 	} else {
 	    row.add("");
 	    row.add("");
+	    row.add("");
+	    row.add("");
 	}
+	row.add(this.comment!=null?this.comment:"");
 	return row.toString();
     }
 
@@ -628,7 +633,7 @@ public class Map implements Comparable<Object> {
     }
 
     @SuppressWarnings("unused")
-private String toStringOldXDF(ByteBuffer image) throws Exception {
+    private String toStringOldXDF(ByteBuffer image) throws Exception {
 	final boolean table = this.organization.isTable();
 	final boolean oneD = this.organization.is1D() || this.size.y<=1;
 	String out = table?"%%TABLE%%\n":"%%CONSTANT%%\n";
@@ -852,9 +857,11 @@ private String toStringOldXDF(ByteBuffer image) throws Exception {
 	String desc = "";
 	if(this.id.length()>0) {
 	    title = this.id.split(" ")[0];	// HACK: drop the junk
-	    desc = this.name;
+	    desc = this.name.trim();
+	    if (this.comment!=null) desc += "\r\n" + this.comment.trim();
 	} else {
 	    title = this.name;
+	    if (this.comment!=null) desc = this.comment.trim();
 	}
 	xs.append("title", title);
 	xs.append("description", desc);

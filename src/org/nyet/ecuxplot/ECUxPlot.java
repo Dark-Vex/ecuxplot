@@ -11,7 +11,8 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.*;
 
-import com.apple.eawt.*;
+import java.awt.desktop.*;
+import java.awt.Desktop;
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
@@ -26,7 +27,9 @@ import org.nyet.util.*;
 import org.nyet.logfile.Dataset;
 import org.nyet.logfile.Dataset.DatasetId;
 
-public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost {
+public class ECUxPlot extends ApplicationFrame implements SubActionListener, FileDropHost,
+    OpenFilesHandler, QuitHandler
+    /* AboutHandler, PreferencesHandler */ {
     /**
      *
      */
@@ -866,6 +869,32 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 	}
     }
 
+    // java.awt.Desktop stuff
+    /*
+    // we implement AboutHandler
+    public void handleAbout(AboutEvent e)
+    {
+	JOptionPane.showMessageDialog(this, new AboutPanel(), "About ECUxPlot", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    // we don't implement PreferencesHandler
+    public void handlePreferences(PreferencesEvent e)
+    {
+    }
+    */
+
+    // we implement OpenFilesHandler
+    public void openFiles(OpenFilesEvent e)
+    {
+	this.loadFiles(e.getFiles());
+    }
+
+    // we implement QuitHandler
+    public void handleQuitRequestWith(QuitEvent e, QuitResponse r)
+    {
+	this.exitApp();
+    }
+
     public static void main(final String[] args) {
 	javax.swing.SwingUtilities.invokeLater(new Runnable() {
 	    @Override
@@ -874,21 +903,25 @@ public class ECUxPlot extends ApplicationFrame implements SubActionListener, Fil
 
 		// exit on close
 		final ECUxPlot plot = new ECUxPlot("ECUxPlot", o.size, true, o.verbose);
-		final Application app = Application.getApplication();
 
-		if(app!=null) {
-		    app.addApplicationListener(new ApplicationAdapter() {
-			@Override
-			public void handleOpenFile(ApplicationEvent evt) {
-			    final String file = evt.getFilename();
-			    plot.loadFile(new File(file));
-			}
-			@Override
-			public void handleQuit(ApplicationEvent evt) {
-			    plot.prefsPutWindowSize();
-			    evt.setHandled(true);
-			}
-		    });
+		// java.awt.Desktop stuff
+		final Desktop dt = Desktop.getDesktop();
+
+		if(dt!=null) {
+		    /*
+		    if (dt.isSupported(Desktop.Action.APP_ABOUT)) {
+			dt.setAboutHandler(plot);
+		    }
+		    if (dt.isSupported(Desktop.Action.APP_PREFERENCES)) {
+			dt.setPreferencesHandler(plot);
+		    }
+		    */
+		    if (dt.isSupported(Desktop.Action.APP_OPEN_FILE)) {
+			dt.setOpenFileHandler(plot);
+		    }
+		    if (dt.isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
+			dt.setQuitHandler(plot);
+		    }
 		}
 
 		plot.pack();
